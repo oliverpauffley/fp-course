@@ -1,12 +1,13 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE InstanceSigs        #-}
+{-# LANGUAGE NoImplicitPrelude   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE InstanceSigs #-}
 
 module Course.Comonad where
 
-import Course.Core
-import Course.ExactlyOne
-import Course.Extend
+import           Course.Core
+import           Course.ExactlyOne
+import           Course.Extend
+import           Course.Functor
 
 -- | All instances of the `Comonad` type-class must satisfy two laws. These
 -- laws are not checked by the compiler. These laws are given as:
@@ -16,10 +17,10 @@ import Course.Extend
 --
 -- * The law of right identity
 --   `∀f. copure . (f <<=) == f
-class Extend k => Comonad k where
+class (Extend k) => Comonad k where
   copure ::
-    k a
-    -> a
+    k a ->
+    a
 
 -- | Implement the @Comonad@ instance for @ExactlyOne@.
 --
@@ -27,19 +28,19 @@ class Extend k => Comonad k where
 -- 7
 instance Comonad ExactlyOne where
   copure ::
-    ExactlyOne a
-    -> a
-  copure =
-    error "todo: Course.Comonad copure#instance ExactlyOne"
+    ExactlyOne a ->
+    a
+  copure (ExactlyOne a) =
+    a
 
 -- | Witness that all things with (<<=) and copure also have (<$>).
 --
 -- >>> (+10) <$$> ExactlyOne 7
 -- ExactlyOne 17
 (<$$>) ::
-  Comonad k =>
-  (a -> b)
-  -> k a
-  -> k b
-(<$$>) =
-  error "todo: Course.Comonad#(<$>)"
+  (Comonad k) =>
+  (a -> b) ->
+  k a ->
+  k b
+(<$$>)  =
+  (<$>)
