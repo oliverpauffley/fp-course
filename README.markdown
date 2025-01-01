@@ -208,7 +208,14 @@ step is to complete the exercises in `Course.Optional`.
 After this, we recommend the following progression of modules:
 
 * `Course.List`
-* `Course.Functor`
+
+a :: t -> a
+
+Defined at /home/ollie/code/haskell/fp-course/src/Course/Applicative.hs:129:11
+
+* * *
+
+_ :: a* `Course.Functor`
 * `Course.Applicative`
 * `Course.Monad`
 * `Course.FileIO`

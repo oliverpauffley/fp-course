@@ -1,14 +1,14 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE InstanceSigs        #-}
+{-# LANGUAGE NoImplicitPrelude   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE InstanceSigs #-}
 
 module Course.Functor where
 
-import Course.Core
-import Course.ExactlyOne
-import Course.Optional
-import Course.List
-import qualified Prelude as P(fmap)
+import           Course.Core
+import           Course.ExactlyOne
+import           Course.List
+import           Course.Optional
+import qualified Prelude           as P (fmap)
 
 -- | All instances of the `Functor` type-class must satisfy two laws. These laws
 -- are not checked by the compiler. These laws are given as:
@@ -21,9 +21,9 @@ import qualified Prelude as P(fmap)
 class Functor k where
   -- Pronounced, eff-map.
   (<$>) ::
-    (a -> b)
-    -> k a
-    -> k b
+    (a -> b) ->
+    k a ->
+    k b
 
 infixl 4 <$>
 
@@ -38,26 +38,27 @@ infixl 4 <$>
 -- ExactlyOne 3
 instance Functor ExactlyOne where
   (<$>) ::
-    (a -> b)
-    -> ExactlyOne a
-    -> ExactlyOne b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance ExactlyOne"
+    (a -> b) ->
+    ExactlyOne a ->
+    ExactlyOne b
+  f <$> (ExactlyOne a) = ExactlyOne (f a)
 
 -- | Maps a function on the List functor.
 --
 -- >>> (+1) <$> Nil
--- []
+-- WAS []
+-- NOW /home/ollie/code/haskell/fp-course/src/Course/Functor.hs:58:3-37: Non-exhaustive patterns in function <$>
 --
 -- >>> (+1) <$> (1 :. 2 :. 3 :. Nil)
--- [2,3,4]
+-- WAS [2,3,4]
+-- NOW /home/ollie/code/haskell/fp-course/src/Course/Functor.hs:58:3-37: Non-exhaustive patterns in function <$>
 instance Functor List where
   (<$>) ::
-    (a -> b)
-    -> List a
-    -> List b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance List"
+    (a -> b) ->
+    List a ->
+    List b
+  _ <$> Nil       = Nil
+  f <$> (x :. xs) = f x :. (f <$> xs)
 
 -- | Maps a function on the Optional functor.
 --
@@ -68,11 +69,11 @@ instance Functor List where
 -- Full 3
 instance Functor Optional where
   (<$>) ::
-    (a -> b)
-    -> Optional a
-    -> Optional b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance Optional"
+    (a -> b) ->
+    Optional a ->
+    Optional b
+  (<$>) f (Full a) = Full (f a)
+  (<$>) _ Empty    = Empty
 
 -- | Maps a function on the reader ((->) t) functor.
 --
@@ -80,11 +81,11 @@ instance Functor Optional where
 -- 17
 instance Functor ((->) t) where
   (<$>) ::
-    (a -> b)
-    -> ((->) t a)
-    -> ((->) t b)
-  (<$>) =
-    error "todo: Course.Functor (<$>)#((->) t)"
+    (a -> b) ->
+    ((->) t a) ->
+    ((->) t b)
+  f <$> a =
+    f . a
 
 -- | Anonymous map. Maps a constant value on a functor.
 --
@@ -92,15 +93,17 @@ instance Functor ((->) t) where
 -- [7,7,7]
 --
 -- prop> \x a b c -> x <$ (a :. b :. c :. Nil) == (x :. x :. x :. Nil)
+-- Not in scope: type constructor or class `String'
 --
 -- prop> \x q -> x <$ Full q == Full x
+-- Not in scope: type constructor or class `String'
 (<$) ::
-  Functor k =>
-  a
-  -> k b
-  -> k a
-(<$) =
-  error "todo: Course.Functor#(<$)"
+  (Functor k) =>
+  a ->
+  k b ->
+  k a
+a <$ xs =
+  const a <$> xs
 
 -- | Apply a value to a functor-of-functions.
 --
@@ -120,12 +123,12 @@ instance Functor ((->) t) where
 -- >>> Empty ?? 2
 -- Empty
 (??) ::
-  Functor k =>
-  k (a -> b)
-  -> a
-  -> k b
+  (Functor k) =>
+  k (a -> b) ->
+  a ->
+  k b
 (??) ff a =
-  error "todo: Course.Functor#(??)"
+  (<$>) (\x -> x a) ff
 
 infixl 1 ??
 
@@ -143,11 +146,11 @@ infixl 1 ??
 -- >>> void (+10) 5
 -- ()
 void ::
-  Functor k =>
-  k a
-  -> k ()
-void =
-  error "todo: Course.Functor#void"
+  (Functor k) =>
+  k a ->
+  k ()
+void f =
+  () <$ f
 
 -----------------------
 -- SUPPORT LIBRARIES --
